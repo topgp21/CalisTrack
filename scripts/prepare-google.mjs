@@ -1,0 +1,11 @@
+import fs from 'node:fs/promises';
+import {googleRequest,prepareProject} from './google-api.mjs';
+import {deploymentConfig} from '../public/deployment-config.js';
+const root=new URL('../',import.meta.url),configURL=new URL('server/project.json',root);
+const token=process.env.CALISTRACK_GOOGLE_ACCESS_TOKEN;
+if(!token)throw Error('Google deployment is blocked: save CALISTRACK_GOOGLE_ACCESS_TOKEN in the repository Actions Secrets. Never send it in chat.');
+const config=JSON.parse(await fs.readFile(configURL,'utf8'));
+const persist=async value=>{const tmp=new URL('server/project.json.tmp',root);await fs.writeFile(tmp,JSON.stringify(value,null,2)+'\n');await fs.rename(tmp,configURL);};
+const result=await prepareProject({config,request:googleRequest(token),persist,source:await fs.readFile(new URL('server/Code.gs',root),'utf8'),manifest:JSON.parse(await fs.readFile(new URL('server/appsscript.json',root),'utf8')),clientId:deploymentConfig.clientId});
+console.log(JSON.stringify(result));
+console.log('Source uploaded. The owner must grant script permissions; OAuth client configuration and deployment remain separate steps.');

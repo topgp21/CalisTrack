@@ -52,3 +52,10 @@ function safe_(v){return typeof v==='string'&&/^[=+@-]/.test(v)?"'"+v:v;}
 function replace_(db,name,headers,rows){var s=sheet_(db,name,headers);s.clearContents();s.getRange(1,1,1,headers.length).setValues([headers]);if(rows.length)s.getRange(2,1,rows.length,headers.length).setValues(rows.map(function(row){return row.map(safe_);}));}
 function project_(db,records){var workouts=[],sets=[],measurements=[];Object.keys(records).forEach(function(id){var r=records[id];if(r.type==='workout'){workouts.push([r.id,r.start,r.end,r.week||1,r.revision,r.updatedAt,!!r.deleted]);r.sets.forEach(function(s){sets.push([s.id,r.id,s.exercise,s.index,s.target,s.difficulty,s.actual===null?'':s.actual,s.done,r.revision,r.updatedAt,!!r.deleted]);});}else measurements.push([r.id,r.date,r.weight,r.waist===null?'':r.waist,'reported',r.revision,r.updatedAt,!!r.deleted]);});replace_(db,'Workouts',['id','start','end','week','revision','updatedAt','deleted'],workouts);replace_(db,'Sets',['id','workoutId','exerciseId','index','target','difficulty','actual','done','revision','updatedAt','deleted'],sets);replace_(db,'Measurements',['id','date','weight','waist','source','revision','updatedAt','deleted'],measurements);replace_(db,'Exercises',['id','name','unit'],[['pushup','שכיבות סמיכה','reps'],['squat','סקוואט לכיסא','reps'],['row','חתירה עם תיק גב','reps'],['bridge','גשר ישבן','reps'],['plank','פלאנק','seconds']]);}
 function json_(v){return ContentService.createTextOutput(JSON.stringify(v)).setMimeType(ContentService.MimeType.JSON);}
+/** Owner runs this once from the editor to consent. It does not write workout data. */
+function authorizeCalisTrack(){
+ if(Session.getEffectiveUser().getEmail().toLowerCase()!==required_('OWNER_EMAIL').toLowerCase())throw Error('החשבון אינו מורשה');
+ SpreadsheetApp.openById(required_('SPREADSHEET_ID')).getId();
+ UrlFetchApp.fetch('https://oauth2.googleapis.com/tokeninfo',{muteHttpExceptions:true});
+ console.log('CalisTrack: הרשאות הגיליון והרשת נבדקו. עדיין נדרשים OAuth ופריסה.');
+}

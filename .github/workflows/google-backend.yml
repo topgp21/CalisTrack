@@ -1,0 +1,42 @@
+name: CalisTrack · prepare Google backend
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/google-backend.yml'
+      - 'scripts/google-api.mjs'
+      - 'scripts/prepare-google.mjs'
+permissions:
+  contents: write
+concurrency:
+  group: calistrack-google-setup
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm test
+      - name: Create and upload CalisTrack script with verified owner identity
+        run: node scripts/prepare-google.mjs
+        env:
+          CALISTRACK_GOOGLE_ACCESS_TOKEN: ${{ secrets.CALISTRACK_GOOGLE_ACCESS_TOKEN }}
+      - name: Preserve non-secret project ID even after a later upload failure
+        if: always()
+        run: |
+          git add server/project.json
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Record CalisTrack Google project identity'
+            git push origin HEAD:main
+          fi
+      - name: Retain recovery metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calistrack-google-project
+          path: server/project.json
+          retention-days: 30
