@@ -21,14 +21,14 @@ jobs:
         with:
           node-version: '24'
       - run: npm test
-      - name: Create and upload CalisTrack script with verified owner identity
+      - name: Prepare and deploy CalisTrack script with verified owner identity
         run: node scripts/prepare-google.mjs
         env:
           CALISTRACK_GOOGLE_ACCESS_TOKEN: ${{ secrets.CALISTRACK_GOOGLE_ACCESS_TOKEN }}
       - name: Preserve non-secret project ID even after a later upload failure
         if: always()
         run: |
-          git add server/project.json
+          git add server/project.json public/deployment-config.js
           if ! git diff --cached --quiet; then
             git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Record CalisTrack Google project identity'
             git push origin HEAD:main

@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import {googleRequest,prepareProject} from './google-api.mjs';
+import {googleRequest,prepareProject,deployProject} from './google-api.mjs';
 import {deploymentConfig} from '../public/deployment-config.js';
 const root=new URL('../',import.meta.url),configURL=new URL('server/project.json',root);
 const token=process.env.CALISTRACK_GOOGLE_ACCESS_TOKEN;
@@ -8,4 +8,7 @@ const config=JSON.parse(await fs.readFile(configURL,'utf8'));
 const persist=async value=>{const tmp=new URL('server/project.json.tmp',root);await fs.writeFile(tmp,JSON.stringify(value,null,2)+'\n');await fs.rename(tmp,configURL);};
 const result=await prepareProject({config,request:googleRequest(token),persist,source:await fs.readFile(new URL('server/Code.gs',root),'utf8'),manifest:JSON.parse(await fs.readFile(new URL('server/appsscript.json',root),'utf8')),clientId:deploymentConfig.clientId});
 console.log(JSON.stringify(result));
-console.log('Source uploaded. The owner must grant script permissions; OAuth client configuration and deployment remain separate steps.');
+const deployed=await deployProject({config,request:googleRequest(token),persist});
+await fs.writeFile(new URL('public/deployment-config.js',root),'// Public routing only. No credentials.\nexport const deploymentConfig='+JSON.stringify({url:deployed.backendUrl,clientId:deploymentConfig.clientId})+';\n');
+console.log(JSON.stringify({...deployed,ownerConsentVerified:false,cloudWorkoutWriteVerified:false}));
+console.log('Owner consent and Google sign-in client configuration remain required. No cloud workout storage has been verified.');
