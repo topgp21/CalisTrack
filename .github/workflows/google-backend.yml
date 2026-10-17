@@ -7,6 +7,7 @@ on:
       - '.github/workflows/google-backend.yml'
       - 'scripts/google-api.mjs'
       - 'scripts/prepare-google.mjs'
+      - 'public/deployment-config.js'
 permissions:
   contents: write
 concurrency:

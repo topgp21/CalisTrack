@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {deploymentConfig} from '../public/deployment-config.js';
 const origin=new URL(process.argv[2]);assert.equal(origin.protocol,'https:');
-const shell=['index.html','app.js','core.js','store.js','deployment-config.js','style.css','sw.js','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
+const shell=['index.html','app.js','diagnostics.js','core.js','store.js','deployment-config.js','style.css','sw.js','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
 const sha=v=>createHash('sha256').update(v).digest('hex');
 for(const file of shell){
  const url=new URL(file==='index.html'?'./':file,origin);
