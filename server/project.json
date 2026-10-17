@@ -4,5 +4,11 @@
   "scriptId": "1LlZdOFYMAnWMDYZoBL_PL_KQbTqQDDuoWm7pwDbfi2mi28Ntc7O8Ad7j",
   "createdByCalisTrack": true,
   "sourceUploaded": true,
-  "creationPending": false
+  "creationPending": false,
+  "sourceDigest": "3f5d68e3ee1f770fbd253706f4e29ac7fa8d453ab29914a5e0873c99fee4f0f3",
+  "versionNumber": 1,
+  "versionDigest": "3f5d68e3ee1f770fbd253706f4e29ac7fa8d453ab29914a5e0873c99fee4f0f3",
+  "deploymentCreationPending": false,
+  "deploymentId": "AKfycbzoyfudUsW3Ryriih3kbdIyEdhlPh18QFg2Hrufs7-xbKRoxnL9E-e_yT9pI2oghdOPEA",
+  "backendUrl": "https://script.google.com/macros/s/AKfycbzoyfudUsW3Ryriih3kbdIyEdhlPh18QFg2Hrufs7-xbKRoxnL9E-e_yT9pI2oghdOPEA/exec"
 }
