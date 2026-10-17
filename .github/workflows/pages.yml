@@ -30,3 +30,7 @@ jobs:
       - name: Publish HTTPS PWA
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify deployed HTTPS app
+        run: node scripts/check-site.mjs "$CALISTRACK_SITE_URL"
+        env:
+          CALISTRACK_SITE_URL: ${{ steps.deployment.outputs.page_url }}

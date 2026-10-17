@@ -2,7 +2,7 @@
 
 PWA אישית בעברית, RTL, ללא ספריות לקוח או תהליך build. תיקיית `public` היא האתר; `server` הוא שרת Google Apps Script. כל הקבצים שייכים לפרויקט חדש זה בלבד.
 
-**מצב הפריסה המעודכן:** נוצר ואומת גיליון CalisTrack פרטי עם הלשוניות Operations, Workouts, Sets, Measurements, Exercises ונתוני התרגילים. 13 בדיקות אוטומטיות עברו. האתר ו־Apps Script טרם נפרסו, OAuth טרם הוגדר, ולא בוצעה בדיקת אינטגרציה או בדיקת דפדפן אמיתית. חיבור GitHub אינו מאומת; לא קיימות הרשאות API לפריסת Apps Script בסביבת הענן. כלי העזר של Sites אינם מותקנים. תוכנית האירוח: GitHub Pages החינמי עם Actions. פרטי המשאבים שנוצרו נשמרים ב־`.calistrack/deployment.json`, שאינו מיועד ל־Git. אין ליצור גיליון נוסף בהמשך הפריסה.
+**מצב הפריסה המעודכן:** האתר נפרס ב־GitHub Pages בכתובת https://topgp21.github.io/CalisTrack/ . 13 בדיקות עברו גם ב־GitHub Actions. גיליון CalisTrack פרטי נוצר ואומת עם הלשוניות Operations, Workouts, Sets, Measurements, Exercises. שרת Apps Script ו־OAuth טרם הוגדרו או נפרסו, ולכן שמירת אימונים באפליקציה היא עדיין מקומית בלבד. לא בוצעה בדיקת אינטגרציה אמיתית עם השרת או בדיקת התקנה בדפדפן. אין ליצור גיליון נוסף בהמשך הפריסה. פרטי המשאבים נשמרים ב־`.calistrack/deployment.json`, שאינו מיועד ל־Git.
 
 ## פתיחה מקומית
 
