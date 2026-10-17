@@ -1,0 +1,4 @@
+const DB='calistrack-v1';
+export function database(){return new Promise((resolve,reject)=>{const q=indexedDB.open(DB,1);q.onupgradeneeded=()=>q.result.createObjectStore('state');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}
+export async function read(){const db=await database();return new Promise((resolve,reject)=>{const tx=db.transaction('state');const q=tx.objectStore('state').get('main');q.onsuccess=()=>resolve(q.result??{records:{},queue:[],draft:null,settings:{},config:{}});q.onerror=()=>reject(q.error);tx.oncomplete=()=>db.close();});}
+export async function write(state){const db=await database();return new Promise((resolve,reject)=>{const tx=db.transaction('state','readwrite');tx.objectStore('state').put(structuredClone(state),'main');tx.oncomplete=()=>{db.close();resolve();};tx.onerror=()=>{db.close();reject(tx.error);};tx.onabort=()=>reject(tx.error??Error('השמירה בוטלה'));});}
