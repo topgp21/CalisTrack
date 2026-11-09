@@ -3,3 +3,5 @@
 
 
 .import-dialog{width:min(94vw,600px);max-height:90dvh;overflow-y:auto;background:var(--card);color:inherit;border:1px solid var(--line);border-radius:18px;padding:20px}.import-dialog::backdrop{background:#0009}.import-dialog textarea{width:100%;box-sizing:border-box;min-height:90px;font:inherit;padding:12px}.import-dialog textarea{background:var(--card);color:inherit;border:1px solid var(--line);border-radius:10px}.import-dialog fieldset{min-width:0}.import-dialog button{margin-block:6px}#import-error{color:var(--danger,#b33);white-space:pre-line}
+
+.import-original{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}.import-dialog textarea[readonly]{opacity:.9}#import-count{font-weight:700}

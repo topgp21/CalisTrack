@@ -33,6 +33,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Verify Hebrew import on a phone-sized browser without cloud access
         run: node scripts/test-import-browser.mjs
+      - name: Verify v6 to v7 Service Worker upgrade and offline import
+        run: node scripts/test-service-worker.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -45,3 +47,7 @@ jobs:
         env:
           CALISTRACK_SITE_URL: ${{ steps.deployment.outputs.page_url }}
 
+      - name: Verify live browser receives current JavaScript through Service Worker
+        run: node scripts/test-service-worker.mjs "$CALISTRACK_SITE_URL"
+        env:
+          CALISTRACK_SITE_URL: ${{ steps.deployment.outputs.page_url }}

@@ -1,5 +1,5 @@
 import {exercises,uuid,newWorkout,validate,stats,csv,mergeRemote,acknowledge,hydrateConfig} from './core.js';
-import {openImport} from './import-dialog.js';
+import {openImport} from './import-dialog.js?v=7';
 import {read,write} from './store.js';
 import {deploymentConfig} from './deployment-config.js';
 import {verifyCloud,cleanupDiagnostic} from './diagnostics.js';
@@ -39,7 +39,7 @@ async function sync(){if(busy)return;if(!state.config.url||!token){message('הנ
 window.addEventListener('online',()=>{if(token)sync();});window.addEventListener('hashchange',render);document.querySelector('#theme').onclick=()=>{document.body.classList.toggle('dark');localStorage.setItem('calistrack-theme',document.body.classList.contains('dark')?'dark':'light');};if(localStorage.getItem('calistrack-theme')==='dark')document.body.classList.add('dark');
 let ownsWorkspace=true;
 if(navigator.locks){ownsWorkspace=await new Promise(resolve=>{navigator.locks.request('calistrack-single-writer',{ifAvailable:true},lock=>{resolve(!!lock);return lock?new Promise(()=>{}):undefined;});});}
-try{if(!ownsWorkspace)throw Error('already-open');state=await read();const resolvedConfig=hydrateConfig(state.config,deploymentConfig);if(JSON.stringify(resolvedConfig)!==JSON.stringify(state.config)){state.config=resolvedConfig;await persist();}render();if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>message('מצב לא מקוון טרם הופעל'));}navigator.storage?.persist?.();}catch(e){app.innerHTML=ownsWorkspace?'<h1>לא ניתן לפתוח אחסון מקומי</h1><p>אין להתחיל אימון לפני מתן הרשאת אחסון לדפדפן. נסה לפתוח ב־Chrome במצב רגיל.</p>':'<h1>CalisTrack כבר פתוח</h1><p>סגור את החלון האחר ורענן כאן כדי לשמור על היסטוריה עקבית.</p>';}
+try{if(!ownsWorkspace)throw Error('already-open');state=await read();const resolvedConfig=hydrateConfig(state.config,deploymentConfig);if(JSON.stringify(resolvedConfig)!==JSON.stringify(state.config)){state.config=resolvedConfig;await persist();}render();if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>message('מצב לא מקוון טרם הופעל'));}navigator.storage?.persist?.();}catch(e){app.innerHTML=ownsWorkspace?'<h1>לא ניתן לפתוח אחסון מקומי</h1><p>אין להתחיל אימון לפני מתן הרשאת אחסון לדפדפן. נסה לפתוח ב־Chrome במצב רגיל.</p>':'<h1>CalisTrack כבר פתוח</h1><p>סגור את החלון האחר ורענן כאן כדי לשמור על היסטוריה עקבית.</p>';}
 
 setInterval(()=>{if(state&&token&&state.queue.length&&navigator.onLine&&!state.conflict)sync();},60000);
 

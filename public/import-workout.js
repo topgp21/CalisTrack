@@ -12,17 +12,33 @@ export function parseWorkoutText(raw){
   const duration=line.match(/^(חימום|שחרור)\s*:?\s*(\d+)\s*דקות?\s*[.]?$/);
   if(duration){const key=duration[1]==='חימום'?'warmup':'cooldown';if(draft[key]!=='')draft.unresolved.push(line);else draft[key]=Number(duration[2]);continue;}
   let match;
-  for(const [id,names]of Object.entries(aliases))for(const name of names){if(line.startsWith(name)&&/^\s*[:־-]/.test(line.slice(name.length))){match={id,rest:line.slice(name.length).replace(/^\s*[:־-]\s*/,'')};break;}if(match)break;}
+  // Longest explicit Hebrew alias first; no fuzzy matching of exercise identities.
+  const names=Object.entries(aliases).flatMap(([id,names])=>names.map(name=>({id,name}))).sort((a,b)=>b.name.length-a.name.length);
+  for(const {id,name} of names){
+   const rest=line.slice(name.length);
+   if(line.startsWith(name)&&/^\s*(?:[:־-]|סט\s*\d)/.test(rest)){
+    match={id,rest:rest.replace(/^\s*[:־-]\s*/,'').trim()};break;
+   }
+  }
   if(!match){draft.unresolved.push(line);continue;}
-  for(const part of match.rest.split(/[,،]+/)){
-   const m=part.trim().match(/^(?:סט\s*(\d+)\s*[:־-]\s*)?(\d+)?\s*(שניות|שנייה|חזרות)?\s*(קל|בינוני|קשה)?\s*[.]?$/);
+  // A comma introducing difficulty belongs to this set, not a new set.
+  const rest=match.rest.replace(/[,،]\s*((?:רמת\s+)?קושי)\s+/g,' $1 ');
+  for(const part of rest.split(/[,،]+/)){
+   const m=part.trim().match(/^(?:סט\s*(\d+)\s*[:־-]\s*)?(\d+)?\s*(שניות|שנייה|חזרות)?\s*(?:(?:רמת\s+)?קושי\s*)?(קל|בינוני|קשה)?\s*[.]?$/);
+   if(!m||(m[3]&&((match.id==='plank')!==/^שני/.test(m[3])))){
+    draft.unresolved.push(match.name?line:exercises.find(e=>e.id===match.id).name+': '+part.trim());continue;
+   }
    const count=draft.sets.filter(s=>s.exercise===match.id).length;
-   const s={exercise:match.id,index:m?.[1]?Number(m[1]):count+1,actual:m?.[2]?Number(m[2]):'',unit:match.id==='plank'?'seconds':'reps',difficulty:m?.[4]||''};
-   if(!m||(m[3]&&((match.id==='plank')!==/^שני/.test(m[3]))))draft.unresolved.push(part.trim());
-   draft.sets.push(s);
+   draft.sets.push({exercise:match.id,index:m[1]?Number(m[1]):count+1,actual:m[2]?Number(m[2]):'',unit:match.id==='plank'?'seconds':'reps',difficulty:m[4]||''});
   }
  }
  return draft;
+}
+export function recognitionCounts(d){
+ const counts=new Map();for(const s of d.sets){const key=s.exercise+':'+Number(s.index);counts.set(key,(counts.get(key)||0)+1);}
+ const recognized=d.sets.filter(s=>counts.get(s.exercise+':'+Number(s.index))===1&&exercises.some(e=>e.id===s.exercise)&&Number.isInteger(Number(s.index))&&Number(s.index)>0&&Number(s.index)<=100&&s.actual!==''&&Number.isInteger(Number(s.actual))&&Number(s.actual)>0&&Number(s.actual)<=10000&&s.difficulty.trim()&&s.difficulty.length<=60&&s.unit===(s.exercise==='plank'?'seconds':'reps')).length;
+ const unknown=d.unresolved.filter(line=>/סט\s*\d|חזרות|שני(?:ות|יה)|:\s*\d/.test(line)||Object.values(aliases).flat().some(name=>line.includes(name))).length;
+ return {recognized,total:d.sets.length+unknown};
 }
 export function importErrors(d){const errors=[];if(!validDate(d.date))errors.push('יש להזין תאריך אימון מלא ותקין');if(!d.sets.length||d.sets.length>100)errors.push('יש להזין בין סט אחד ל־100 סטים');if(d.unresolved.some(s=>s.trim()))errors.push('יש לתקן או להסיר במפורש את הטקסט שלא פוענח');for(const key of ['warmup','cooldown'])if(d[key]!==''&&(!Number.isInteger(Number(d[key]))||Number(d[key])<0||Number(d[key])>120))errors.push('משך חימום ושחרור חייב להיות 0–120 דקות');const seen=new Set();for(const s of d.sets){const key=s.exercise+':'+s.index;if(!exercises.some(e=>e.id===s.exercise)||!Number.isInteger(Number(s.index))||s.index<1||s.index>100||seen.has(key)||!Number.isInteger(Number(s.actual))||s.actual===''||s.actual<1||s.actual>10000||!s.difficulty.trim()||s.difficulty.length>60||s.unit!==(s.exercise==='plank'?'seconds':'reps'))errors.push('יש לתקן תרגיל, מספר סט ייחודי, תוצאה חיובית, יחידה ורמת קושי בכל סט');seen.add(key);}return [...new Set(errors)];}
 const canonical=d=>JSON.stringify([d.date,[...d.sets].map(s=>[s.exercise,Number(s.index),Number(s.actual),s.difficulty.trim()]).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))||a[1]-b[1])]);
