@@ -28,8 +28,8 @@ try{
  await page.locator('#import-text').fill(broken);await page.locator('#parse-import').click();
  assert.equal(await page.locator('#import-count').innerText(),'9 מתוך 10 סטים זוהו');assert.equal(await page.locator('[data-unresolved]').getAttribute('readonly'),'');
  await page.locator('#save-import').click();assert.match(await page.locator('#import-error').innerText(),/שלא פוענח/);assert.equal(Object.keys((await readState()).records).length,0);
- assert.equal(await page.locator('.import-original').innerText(),broken);await page.locator('#back-import').click();assert.equal(await page.locator('#import-text').inputValue(),broken);
- await page.locator('#import-text').fill(summary);await page.locator('#parse-import').click();assert.equal(await page.locator('#import-count').innerText(),'10 מתוך 10 סטים זוהו');assert.equal(await page.locator('.import-original').innerText(),broken);await page.locator('#import-close').click();
+ assert.equal(await page.locator('.import-original').textContent(),broken);await page.locator('#back-import').click();assert.equal(await page.locator('#import-text').inputValue(),broken);
+ await page.locator('#import-text').fill(summary);await page.locator('#parse-import').click();assert.equal(await page.locator('#import-count').innerText(),'10 מתוך 10 סטים זוהו');assert.equal(await page.locator('.import-original').textContent(),broken);await page.locator('#import-close').click();
  // Seed a fixture through real IndexedDB, then ensure import leaves it untouched.
  const existing={id:'existing-fixture',type:'workout',start:'2026-11-01T10:00:00Z',end:'2026-11-01T10:20:00Z',week:1,revision:1,sets:[{id:'existing-set',exercise:'pushup',index:1,target:'5–8',actual:5,done:true,difficulty:'רגילה'}]};
  await page.evaluate(async existing=>{const {read,write}=await import('./store.js');const s=await read();s.records[existing.id]=existing;await write(s);},existing);await page.reload();
