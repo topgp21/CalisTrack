@@ -5,3 +5,17 @@ test('server authenticates, commits once, rejects stale edits and preserves dele
 test('projection failure after durable commit is safe to retry',()=>{const {call,ctx,sheets}=server();const real=ctx.project_;ctx.project_=()=>{throw Error('temporary sheet failure');};const body={action:'push',operation:{opId:'o1',baseRevision:0,record:{id:'m1',type:'measurement',date:'2026-10-17',weight:89,waist:null}}};assert.equal(call(body).ok,false);ctx.project_=real;assert.equal(call(body).ok,true);assert.equal(sheets.Operations.rows.length,2);assert.equal(sheets.Measurements.rows.length,2);});
 test('server rejects wrong account, audience, expired and unverified identity',()=>{const {call,ctx}=server();const valid={aud:'client',iss:'https://accounts.google.com',exp:Date.now()/1000+3600,email_verified:true,email:'owner@test.com'};for(const patch of [{email:'other@test.com'},{aud:'wrong'},{exp:0},{email_verified:false},{iss:'https://evil.test'}]){ctx.UrlFetchApp.fetch=()=>({getResponseCode:()=>200,getContentText:()=>JSON.stringify({...valid,...patch})});assert.equal(call({action:'pull'}).ok,false);}});
 test('operation IDs cannot inject spreadsheet formulas and revision must be integer',()=>{const {call}=server();const record={id:'m1',type:'measurement',date:'2026-10-17',weight:89,waist:null};for(const op of [{opId:'=IMPORTXML(1)',baseRevision:0,record},{opId:'o1',baseRevision:'0',record}])assert.equal(call({action:'push',operation:op}).ok,false);});
+
+
+// Import integration runs against the real Apps Script code with an in-memory Sheets double.
+import {parseWorkoutText,buildImportedWorkout} from '../public/import-workout.js';
+import {summary} from './fixtures/workout-summary.mjs';
+test('imported workout round-trips all metadata and ten sets without touching existing history',async()=>{
+ const {call,sheets}=server();const existing={id:'prior-workout',type:'workout',start:'2026-10-01T10:00Z',end:'2026-10-01T10:20Z',week:1,sets:[]};
+ const before=call({action:'push',operation:{opId:'existing-op',baseRevision:0,record:existing}}).record;
+ const r=await buildImportedWorkout(parseWorkoutText(summary),summary);const op={opId:'import-op',baseRevision:0,record:r};
+ assert.equal(call({action:'push',operation:op}).ok,true);assert.equal(call({action:'push',operation:op}).ok,true);
+ const data=call({action:'pull'});assert.equal(data.records.length,2);assert.deepEqual(data.records.find(x=>x.id===existing.id),before);
+ const stored=data.records.find(x=>x.id===r.id);assert.equal(stored.sets.length,10);assert.equal(stored.timeUnknown,true);assert.equal(stored.workoutDate,'2026-11-09');assert.equal(stored.warmupMinutes,3);assert.equal(stored.cooldownMinutes,2);assert.equal(stored.importedText,summary);assert.equal(stored.importSourceFingerprint,r.importSourceFingerprint);assert.equal(sheets.Sets.rows.length,11);
+ assert.equal(call({action:'push',operation:{...op,opId:'repeat-from-other-device'}}).ok,false);assert.equal(sheets.Operations.rows.length,3);
+});

@@ -27,6 +27,12 @@ jobs:
           node-version: '24'
       - run: npm test
       - run: node --check public/app.js
+      - name: Install isolated browser test tooling
+        run: npm install --no-save --package-lock=false playwright
+      - name: Install Chromium for browser tests
+        run: npx playwright install --with-deps chromium
+      - name: Verify Hebrew import on a phone-sized browser without cloud access
+        run: node scripts/test-import-browser.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -38,3 +44,4 @@ jobs:
         run: node scripts/check-site.mjs "$CALISTRACK_SITE_URL"
         env:
           CALISTRACK_SITE_URL: ${{ steps.deployment.outputs.page_url }}
+
